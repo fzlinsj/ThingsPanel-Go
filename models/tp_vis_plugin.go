@@ -19,6 +19,7 @@ type TpVisFiles struct {
 	FileUrl     string `json:"file_url,omitempty"`
 	FileSize    string `json:"file_size,omitempty"`
 	CreatedAt   int64  `gorm:"column:create_at" json:"create_at,omitempty"`
+	Remark      string `json:"remark,omitempty"`
 }
 
 func (TpVisFiles) TableName() string {

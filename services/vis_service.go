@@ -20,6 +20,37 @@ type TpVis struct {
 	TimeField []string
 }
 
+func (*TpVis) GetBlackGroudImgList(PaginationValidate valid.TpVisPluginPaginationValidate, tenantId string) (bool, []map[string]interface{}, int64) {
+
+	var visFiles []models.TpVisFiles
+	offset := (PaginationValidate.CurrentPage - 1) * PaginationValidate.PerPage
+	db := psql.Mydb.Model(&models.TpVisFiles{})
+	db.Where("tenant_id = ? and remark = 'imporBackground'", tenantId)
+
+	var count int64
+	db.Count(&count)
+	result := db.Limit(PaginationValidate.PerPage).Offset(offset).Order("create_at").Find(&visFiles)
+	if result.Error != nil {
+		logs.Error(result.Error, gorm.ErrRecordNotFound)
+		return false, nil, 0
+	}
+
+	var data []map[string]interface{}
+	for _, v := range visFiles {
+		data = append(data, map[string]interface{}{
+			"id":          v.Id,
+			"file_name":   v.FileName,
+			"file_size":   v.FileSize,
+			"file_url":    v.FileUrl,
+			"create_time": v.CreatedAt,
+		})
+
+	}
+
+	return true, data, count
+
+}
+
 //获取列表
 func (*TpVis) GetTpVisPluginList(PaginationValidate valid.TpVisPluginPaginationValidate, tenantId string) (bool, []map[string]interface{}, int64) {
 
@@ -90,6 +121,28 @@ func (*TpVis) UploadTpVisPlugin(plugin_name, tenantId string, files []map[string
 		}
 	}
 
+	return true
+
+}
+
+func (*TpVis) UploadBlackGroundImg(tenantId string, files []map[string]string) bool {
+
+	for _, f := range files {
+		var visfile models.TpVisFiles
+		visfile.Id = utils.GetUuid()
+		visfile.VisPluginId = visfile.Id
+		visfile.FileName = f["file_name"]
+		visfile.FileUrl = f["file_url"]
+		visfile.FileSize = f["file_size"]
+		visfile.Remark = f["file_remark"]
+		visfile.CreatedAt = time.Now().Unix()
+		tx := psql.Mydb.Model(&models.TpVisFiles{})
+		err := tx.Create(&visfile).Error
+		if err != nil {
+			logs.Error(err.Error())
+			return false
+		}
+	}
 	return true
 
 }

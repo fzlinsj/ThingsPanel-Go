@@ -1,15 +1,21 @@
 package controllers
 
 import (
+	gvalid "ThingsPanel-Go/initialize/validate"
+	"ThingsPanel-Go/services"
 	"ThingsPanel-Go/utils"
 	response "ThingsPanel-Go/utils"
+	valid "ThingsPanel-Go/validate"
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
 	"path"
+	"strings"
 	"time"
 
+	"github.com/beego/beego/v2/core/validation"
 	beego "github.com/beego/beego/v2/server/web"
 	context2 "github.com/beego/beego/v2/server/web/context"
 )
@@ -21,6 +27,47 @@ type UploadController struct {
 // func (uploadController *UploadController) UpForm() {
 // 	uploadController.TplName = "upload.tpl"
 // }
+
+func (c *UploadController) List() {
+	reqData := valid.TpVisPluginPaginationValidate{}
+	err := json.Unmarshal(c.Ctx.Input.RequestBody, &reqData)
+	if err != nil {
+		fmt.Println("参数解析失败", err.Error())
+	}
+	v := validation.Validation{}
+	status, _ := v.Valid(reqData)
+	if !status {
+		for _, err := range v.Errors {
+			// 获取字段别称
+			alias := gvalid.GetAlias(reqData, err.Field)
+			message := strings.Replace(err.Message, err.Field, alias, 1)
+			utils.SuccessWithMessage(1000, message, (*context2.Context)(c.Ctx))
+			break
+		}
+		return
+	}
+	//获取租户id
+	tenantId, ok := c.Ctx.Input.GetData("tenant_id").(string)
+	if !ok {
+		response.SuccessWithMessage(400, "代码逻辑错误", (*context2.Context)(c.Ctx))
+		return
+	}
+	var tpvisplugin services.TpVis
+	isSuccess, d, t := tpvisplugin.GetBlackGroudImgList(reqData, tenantId)
+
+	if !isSuccess {
+		utils.SuccessWithMessage(1000, "查询失败", (*context2.Context)(c.Ctx))
+		return
+	}
+	dd := valid.RspTpOtaPaginationValidate{
+		CurrentPage: reqData.CurrentPage,
+		Data:        d,
+		Total:       t,
+		PerPage:     reqData.PerPage,
+	}
+	utils.SuccessWithDetailed(200, "success", dd, map[string]string{}, (*context2.Context)(c.Ctx))
+
+}
 
 func (uploadController *UploadController) UpFile() {
 	fileType := uploadController.GetString("type")
@@ -67,6 +114,12 @@ func (uploadController *UploadController) UpFile() {
 			response.SuccessWithMessage(1000, "文件类型不正确", (*context2.Context)(uploadController.Ctx))
 			return
 		}
+	case "imporBackground":
+		if _, ok := AllowExtMap[ext]; !ok {
+			response.SuccessWithMessage(1000, "文件类型不正确", (*context2.Context)(uploadController.Ctx))
+			return
+		}
+
 	case "d_plugin":
 		// 不做限制
 	default:
@@ -101,5 +154,32 @@ func (uploadController *UploadController) UpFile() {
 	if err != nil {
 		response.SuccessWithMessage(1000, err.Error(), (*context2.Context)(uploadController.Ctx))
 	}
+
+	if fileType == "imporBackground" {
+
+		//获取租户id
+		tenantId, ok := uploadController.Ctx.Input.GetData("tenant_id").(string)
+		if !ok {
+			response.SuccessWithMessage(400, "代码逻辑错误", (*context2.Context)(uploadController.Ctx))
+			return
+		}
+
+		var visfiles []map[string]string
+		visfiles = append(visfiles, map[string]string{
+			"file_name":   fileName,
+			"file_url":    fpath,
+			"file_size":   fmt.Sprintf("%d", h.Size),
+			"file_remark": "imporBackground",
+		})
+
+		var tpvisplugin services.TpVis
+		isSuccess := tpvisplugin.UploadBlackGroundImg(tenantId, visfiles)
+		if !isSuccess {
+			response.SuccessWithMessage(1000, "上传失败", (*context2.Context)(uploadController.Ctx))
+			return
+		}
+
+	}
+
 	response.SuccessWithDetailed(200, "success", fpath, map[string]string{}, (*context2.Context)(uploadController.Ctx))
 }
