@@ -23,7 +23,7 @@ jobs:
         command: |
           git config --global user.name "七星瓢虫"
           git config --global user.email "49963270@qq.com"
-          git remote add gitee https://49963270:${{ secrets.HZ_GITEE_TOKEN }}@gitee.com/thingspanel-go
+          git remote add gitee https://七星瓢虫:${{ secrets.HZ_GITEE_TOKEN }}@gitee.com/thingspanel-go
           git push --force gitee main
 
     - name: Deploy and Check contents
