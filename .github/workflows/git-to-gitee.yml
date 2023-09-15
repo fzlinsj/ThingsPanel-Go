@@ -21,9 +21,9 @@ jobs:
         max_attempts: 3
         timeout_minutes: 5
         command: |
-          git config --global user.name "he-zhuozhuo"
-          git config --global user.email "421045249@qq.com"
-          git remote add gitee https://he-zhuozhuo:${{ secrets.HZ_GITEE_TOKEN }}@gitee.com/ThingsPanel/thingspanel-go
+          git config --global user.name "七星瓢虫"
+          git config --global user.email "49963270@qq.com"
+          git remote add gitee https://49963270:${{ secrets.HZ_GITEE_TOKEN }}@gitee.com/thingspanel-go
           git push --force gitee main
 
     - name: Deploy and Check contents
