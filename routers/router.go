@@ -280,9 +280,10 @@ func init() {
 		// web.NSRouter("/widget/extend/update", &controllers.WidgetController{}, "*:UpdateExtend"),
 
 		// 文件上传接口
-		web.NSRouter("/file/up", &controllers.UploadController{}, "*:UpFile"),             //logo-w
-		web.NSRouter("/file/list", &controllers.UploadController{}, "*:List"),             //logo-w
-		web.NSRouter("/file/upImgFiles", &controllers.UploadController{}, "*:UpImgFiles"), //logo-w
+		web.NSRouter("/file/up", &controllers.UploadController{}, "*:UpFile"),                             //logo-w
+		web.NSRouter("/file/list", &controllers.UploadController{}, "*:List"),                             //logo-w
+		web.NSRouter("/file/upImgFiles", &controllers.UploadController{}, "*:UpImgFiles"),                 //logo-w
+		web.NSRouter("/file/deleteImgFile", &controllers.UploadController{}, "*:DeleteBackGroundImgFile"), //logo-w
 		// 控制日志
 		web.NSRouter("/conditions/log/index", &controllers.ConditionslogController{}, "*:Index"),
 
