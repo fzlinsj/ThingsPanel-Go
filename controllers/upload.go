@@ -265,3 +265,12 @@ func (uploadController *UploadController) UpFile() {
 
 	response.SuccessWithDetailed(200, "success", fpath, map[string]string{}, (*context2.Context)(uploadController.Ctx))
 }
+
+func (uploadController *UploadController) DeleteBackGroundImgFile() {
+
+	id := uploadController.GetString("id")
+	if id == "" {
+		response.SuccessWithMessage(1000, "类型为空", (*context2.Context)(uploadController.Ctx))
+	}
+
+}
