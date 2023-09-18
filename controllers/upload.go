@@ -9,6 +9,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math/rand"
 	"os"
 	"path"
@@ -66,6 +67,87 @@ func (c *UploadController) List() {
 		PerPage:     reqData.PerPage,
 	}
 	utils.SuccessWithDetailed(200, "success", dd, map[string]string{}, (*context2.Context)(c.Ctx))
+
+}
+
+//多文件上传
+func (c *UploadController) UpImgFiles() {
+
+	fileType := c.GetString("type")
+	if fileType == "" {
+		response.SuccessWithMessage(1000, "类型为空", (*context2.Context)(c.Ctx))
+	} else {
+		err := utils.CheckPath(fileType)
+		if err != nil {
+			response.SuccessWithMessage(1000, err.Error(), (*context2.Context)(c.Ctx))
+		}
+	}
+	//获取租户id
+	tenantId, ok := c.Ctx.Input.GetData("tenant_id").(string)
+	if !ok {
+		response.SuccessWithMessage(400, "代码逻辑错误", (*context2.Context)(c.Ctx))
+		return
+	}
+
+	files, err := c.GetFiles("files")
+	if err != nil {
+		utils.SuccessWithMessage(1000, err.Error(), (*context2.Context)(c.Ctx))
+		return
+	}
+	var visfiles []map[string]string
+	for i := range files {
+		file, err := files[i].Open()
+		if err != nil {
+			utils.SuccessWithMessage(1000, err.Error(), (*context2.Context)(c.Ctx))
+			return
+		}
+		defer file.Close()
+		//创建目录
+		uploadDir := "./files/" + fileType + "/" + time.Now().Format("2006-01-02/")
+		err = os.MkdirAll(uploadDir, os.ModePerm)
+		if err != nil {
+			response.SuccessWithMessage(1000, err.Error(), (*context2.Context)(c.Ctx))
+			return
+		}
+		//构造文件名称
+		rand.Seed(time.Now().UnixNano())
+		randNum := fmt.Sprintf("%d", rand.Intn(9999)+1000)
+		hashName := md5.Sum([]byte(time.Now().Format("2006_01_02_15_04_05_") + randNum))
+		ext := path.Ext(files[i].Filename)
+		fileName := fmt.Sprintf("%x", hashName) + ext
+		err = utils.CheckFilename(fileName)
+		if err != nil {
+			response.SuccessWithMessage(1000, err.Error(), (*context2.Context)(c.Ctx))
+			return
+		}
+		fpath := uploadDir + fileName
+
+		dst, err := os.Create(fpath)
+		if err != nil {
+			response.SuccessWithMessage(1000, err.Error(), (*context2.Context)(c.Ctx))
+			return
+		}
+		defer dst.Close()
+
+		if _, err := io.Copy(dst, file); err != nil {
+			response.SuccessWithMessage(1000, err.Error(), (*context2.Context)(c.Ctx))
+			return
+		}
+
+		visfiles = append(visfiles, map[string]string{
+			"file_name":   files[i].Filename,
+			"file_url":    fpath,
+			"file_size":   fmt.Sprintf("%d", files[i].Size),
+			"file_remark": fileType + "_" + tenantId,
+		})
+	}
+	var tpvisplugin services.TpVis
+	isSuccess := tpvisplugin.UploadBlackGroundImg(tenantId, visfiles)
+	if !isSuccess {
+		utils.SuccessWithMessage(1000, "上传失败", (*context2.Context)(c.Ctx))
+		return
+	}
+	utils.SuccessWithMessage(200, "上传成功", (*context2.Context)(c.Ctx))
 
 }
 

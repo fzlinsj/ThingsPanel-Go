@@ -25,7 +25,7 @@ func (*TpVis) GetBlackGroudImgList(PaginationValidate valid.TpVisPluginPaginatio
 	var visFiles []models.TpVisFiles
 	offset := (PaginationValidate.CurrentPage - 1) * PaginationValidate.PerPage
 	db := psql.Mydb.Model(&models.TpVisFiles{})
-	db.Where("tenant_id = ? and remark = 'imporBackground'", tenantId)
+	db.Where("remark =?", "imporBackground_"+tenantId)
 
 	var count int64
 	db.Count(&count)
