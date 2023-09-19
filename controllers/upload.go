@@ -272,19 +272,25 @@ func (uploadController *UploadController) DeleteBackGroundImgFile() {
 	id := uploadController.GetString("id")
 	if id == "" {
 		response.SuccessWithMessage(1000, "Id为空", (*context2.Context)(uploadController.Ctx))
+		return
 	}
 
 	file_url := uploadController.GetString("file_url")
 	if file_url == "" {
 		response.SuccessWithMessage(1000, "图片地址为空", (*context2.Context)(uploadController.Ctx))
+		return
 	}
 
-	err := os.Remove(file_url)
-	if err != nil {
-		response.SuccessWithMessage(1000, "删除图片失败", (*context2.Context)(uploadController.Ctx))
+	_, error := os.Stat(file_url)
+	// check if error is "file  exists"
+	if os.IsExist(error) {
+		err := os.Remove(file_url)
+		if err != nil {
+			response.SuccessWithMessage(1000, "删除图片失败", (*context2.Context)(uploadController.Ctx))
+			return
+		}
 
 	}
-
 	var tpvisplugin services.TpVis
 	isSuccess := tpvisplugin.DeleteBlackGroundImg(id)
 	if !isSuccess {
