@@ -214,6 +214,7 @@ func (uploadController *UploadController) UpFile() {
 	//创建目录
 	uploadDir := "./files/" + fileType + "/" + time.Now().Format("2006-01-02/")
 	err := os.MkdirAll(uploadDir, os.ModePerm)
+
 	if err != nil {
 		response.SuccessWithMessage(1000, err.Error(), (*context2.Context)(uploadController.Ctx))
 	}
@@ -270,7 +271,27 @@ func (uploadController *UploadController) DeleteBackGroundImgFile() {
 
 	id := uploadController.GetString("id")
 	if id == "" {
-		response.SuccessWithMessage(1000, "类型为空", (*context2.Context)(uploadController.Ctx))
+		response.SuccessWithMessage(1000, "Id为空", (*context2.Context)(uploadController.Ctx))
 	}
+
+	file_url := uploadController.GetString("file_url")
+	if file_url == "" {
+		response.SuccessWithMessage(1000, "图片地址为空", (*context2.Context)(uploadController.Ctx))
+	}
+
+	err := os.Remove(file_url)
+	if err != nil {
+		response.SuccessWithMessage(1000, "删除图片失败", (*context2.Context)(uploadController.Ctx))
+
+	}
+
+	var tpvisplugin services.TpVis
+	isSuccess := tpvisplugin.DeleteBlackGroundImg(id)
+	if !isSuccess {
+		response.SuccessWithMessage(1000, "上传失败", (*context2.Context)(uploadController.Ctx))
+		return
+	}
+
+	utils.SuccessWithMessage(200, "上传成功", (*context2.Context)(uploadController.Ctx))
 
 }

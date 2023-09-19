@@ -147,6 +147,17 @@ func (*TpVis) UploadBlackGroundImg(tenantId string, files []map[string]string) b
 
 }
 
+func (*TpVis) DeleteBlackGroundImg(Id string) bool {
+
+	err := psql.Mydb.Delete(&models.TpVisFiles{}, "Id = ?", Id).Error
+	if err != nil {
+		return false
+	}
+
+	return true
+
+}
+
 //根据插件id获取文件列表
 func GetTpVisFilesListByPluginId(vispluginid string) ([]models.TpVisFiles, error) {
 
