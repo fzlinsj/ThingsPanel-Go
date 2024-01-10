@@ -25,11 +25,21 @@ type AuthController struct {
 	beego.Controller
 }
 
+type UserData struct {
+	ID             string `json:"id"`
+	UserName       string `json:"username"`
+	Nickname       string `json:"nickname"`
+	AdditionalInfo string `json:"additionalinfo"`
+	Remark         string `json:"remark"`
+	TenantID       string `json:"tenantID"`
+}
+
 type TokenData struct {
 	AccessToken string   `json:"access_token"`
 	TokenType   string   `json:"token_type"`
 	ExpiresIn   int      `json:"expires_in"`
 	Menus       []string `json:"menus"`
+	UserInfo    UserData `json:"userinfo"`
 }
 
 type MeData struct {
@@ -87,6 +97,14 @@ func (c *AuthController) Login() {
 		AccessToken: token,
 		TokenType:   "Bearer",
 		ExpiresIn:   int(time.Hour.Seconds()),
+		UserInfo: UserData{
+			ID:             user.ID,
+			UserName:       user.Name,
+			Nickname:       user.Name,
+			AdditionalInfo: user.AdditionalInfo,
+			Remark:         user.Remark,
+			TenantID:       user.TenantID,
+		},
 	}
 	response.SuccessWithDetailed(200, "登录成功", d, map[string]string{}, (*context2.Context)(c.Ctx))
 }

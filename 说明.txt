@@ -1,0 +1,2 @@
+$ cd ThingsPanel-Go
+$ go run . start
