@@ -28,6 +28,8 @@ func init() {
 	middleware.OpenapiMiddle()
 
 	api := web.NewNamespace("/api",
+		//获取文件上传oss信息
+		web.NSRouter("/sys/getOssInfo", &controllers.OssController{}, "*:GetOssInfo"), //ty
 		// 登录
 		web.NSRouter("/auth/login", &controllers.AuthController{}, "*:Login"),     //ty
 		web.NSRouter("/auth/logout", &controllers.AuthController{}, "*:Logout"),   //ty
