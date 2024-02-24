@@ -28,8 +28,9 @@ func init() {
 	middleware.OpenapiMiddle()
 
 	api := web.NewNamespace("/api",
+
 		//获取文件上传oss信息
-		web.NSRouter("/sys/getOssInfo", &controllers.OssController{}, "*:GetOssInfo"), //ty
+		web.NSRouter("/goview/sys/getOssInfo", &controllers.OssController{}, "*:GetOssInfo"), //ty
 		// 登录
 		web.NSRouter("/auth/login", &controllers.AuthController{}, "*:Login"),     //ty
 		web.NSRouter("/auth/logout", &controllers.AuthController{}, "*:Logout"),   //ty
@@ -332,6 +333,12 @@ func init() {
 		web.NSRouter("/tp_dashboard/list", &controllers.TpDashboardController{}, "*:List"),
 		web.NSRouter("/tp_dashboard/edit", &controllers.TpDashboardController{}, "*:Edit"),
 		web.NSRouter("/tp_dashboard/delete", &controllers.TpDashboardController{}, "*:Delete"),
+
+		//GoView 可视化总览
+		//web.NSRouter("/tp_dashboard/add", &controllers.TpDashboardController{}, "*:Add"),
+		web.NSRouter("/goview/project/list", &controllers.GoViewDashboardController{}, "*:List"),
+		//web.NSRouter("/tp_dashboard/edit", &controllers.TpDashboardController{}, "*:Edit"),
+		//web.NSRouter("/tp_dashboard/delete", &controllers.TpDashboardController{}, "*:Delete"),
 
 		//可视化插件
 		web.NSRouter("/tp_vis_plugin/list", &controllers.TpVisPluginController{}, "*:List"),

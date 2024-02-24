@@ -20,7 +20,8 @@ type GoViewDashboardController struct {
 
 // 列表
 func (c *GoViewDashboardController) List() {
-	reqData := valid.TpDashboardPaginationValidate{}
+
+	reqData := valid.GoViewDashboardPaginationValidate{}
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &reqData)
 	if err != nil {
 		fmt.Println("参数解析失败", err.Error())
@@ -38,23 +39,23 @@ func (c *GoViewDashboardController) List() {
 		return
 	}
 	//获取租户id
-	tenantId, ok := c.Ctx.Input.GetData("tenant_id").(string)
-	if !ok {
+	tenantId := c.Ctx.Request.Header["TenantId"][0]
+	if len(tenantId) == 0 {
 		response.SuccessWithMessage(400, "代码逻辑错误", (*context2.Context)(c.Ctx))
 		return
 	}
-	var TpDashboardService services.TpDashboardService
-	isSuccess, d, t := TpDashboardService.GetTpDashboardList(reqData, tenantId)
+	var GoViewDashboardService services.GoViewDashboardService
+	isSuccess, d, t := GoViewDashboardService.GetGoViewDashboardList(reqData, tenantId)
 
 	if !isSuccess {
 		response.SuccessWithMessage(1000, "查询失败", (*context2.Context)(c.Ctx))
 		return
 	}
-	dd := valid.RspTpDashboardPaginationValidate{
-		CurrentPage: reqData.CurrentPage,
+	dd := valid.RspGoViewDashboardPaginationValidate{
+		CurrentPage: reqData.Page,
 		Data:        d,
 		Total:       t,
-		PerPage:     reqData.PerPage,
+		PerPage:     reqData.Limit,
 	}
 	response.SuccessWithDetailed(200, "success", dd, map[string]string{}, (*context2.Context)(c.Ctx))
 }
